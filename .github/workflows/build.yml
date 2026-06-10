@@ -26,11 +26,6 @@ jobs:
             && sudo apt update \
             && sudo apt install gh -y
 
-      - name: Authenticate GH
-        env:
-          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: gh auth status
-
       - name: Setup Wine
         run: |
             export WINEPREFIX="$RUNNER_TEMP/.wine"
@@ -74,39 +69,37 @@ jobs:
               Microsoft.Net.4.8.SDK \
               Microsoft.VisualStudio.MinShell
             
-            if [ -f $RUNNER_TEMP/msvc-download/X64.Debuggers.And.Tools-x64_en-us.msi ]; then
-              msiextract -C $MSVC_DIR $RUNNER_TEMP/msvc-download/X64.Debuggers.And.Tools-x64_en-us.msi > /dev/null
-            fi
-            
             $RUNNER_TEMP/msvc-wine/install.sh $MSVC_DIR
             
             echo "UE_WINE_MSVC=`realpath $MSVC_DIR`" >> $GITHUB_ENV
-            echo "WINEPREFIX=$RUNNER_TEMP/.wine" >> $GITHUB_ENV
-            echo "WINEDEBUG=-all" >> $GITHUB_ENV
 
+      # Checkout gratisfactory mod into a path without spaces (MSVC path limitation)
       - name: Checkout SML
         uses: actions/checkout@v6
         with:
           repository: satisfactorymodding/SatisfactoryModLoader
           path: SML
 
-      - name: Inject CustomSwatches mod
+      - name: Move SML to /tmp/work
         run: |
-          rm -rf SML/Mods/CustomSwatches
-          cp -r "$GITHUB_WORKSPACE" SML/Mods/CustomSwatches
+          mkdir -p /tmp/work
+          cp -r "$GITHUB_WORKSPACE/SML" /tmp/work
+
+      - name: Inject CustomSwatches mod into SML
+        run: |
+          rm -rf /tmp/work/SML/Mods/CustomSwatches
+          cp -r "$GITHUB_WORKSPACE" /tmp/work/SML/Mods/CustomSwatches
 
       - name: Download CSS Engine
-        working-directory: /tmp
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          mkdir -p /tmp/ue
-          cd /tmp/ue
+          mkdir -p /tmp/work/ue
+          cd /tmp/work/ue
           gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Linux.tar.zst.*"
-          ls -la
 
       - name: Extract CSS Engine
-        working-directory: /tmp/ue
+        working-directory: /tmp/work/ue
         run: |
           cat UnrealEngine-CSS-Editor-Linux.tar.zst.* | zstd -d | tar -xf -
           rm UnrealEngine-CSS-Editor-Linux.tar.zst.*
@@ -130,13 +123,13 @@ jobs:
 
       - name: Build Development Editor
         run: |
-          /tmp/ue/Engine/Build/BatchFiles/Linux/Build.sh FactoryEditor Linux Development \
-            -project="/tmp/work/SML/FactoryGame.uproject" -Progress
+          /tmp/work/ue/Engine/Build/BatchFiles/Linux/Build.sh FactoryEditor Linux Development \
+            -project="/tmp/work/SML/FactoryGame.uproject"
 
-      - name: Package Mod
+      - name: Package CustomSwatches Mod
         run: |
           ulimit -n 1048576
-          /tmp/ue/Engine/Build/BatchFiles/RunUAT.sh \
+          /tmp/work/ue/Engine/Build/BatchFiles/RunUAT.sh \
             -ScriptsForProject="/tmp/work/SML/FactoryGame.uproject" \
             PackagePlugin \
             -Project="/tmp/work/SML/FactoryGame.uproject" \
