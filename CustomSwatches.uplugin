@@ -1,0 +1,39 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"SemVersion": "1.0.0",
+	"GameVersion": ">=491125",
+	"FriendlyName": "CustomSwatches - Advanced Swatch Management",
+	"Description": "Custom swatches via JSON, auto color by category, and 3 Blueprint paint modes for mass recoloring.",
+	"Category": "Modding",
+	"CreatedBy": "MrSchnirschuh",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "CustomSwatches",
+			"Type": "Runtime",
+			"LoadingPhase": "PostDefault"
+		}
+	],
+	"LocalizationTargets": [
+		{
+			"Name": "CustomSwatches",
+			"LoadingPolicy": "Always",
+			"ConfigGenerationPolicy": "Never"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true
+		}
+	]
+}

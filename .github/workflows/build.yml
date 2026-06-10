@@ -1,0 +1,153 @@
+name: Build CustomSwatches Mod
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Dependencies
+        run: sudo apt update && sudo apt install -y wget build-essential zstd dos2unix git
+
+      - name: Setup github CLI
+        run: |
+          (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+            && sudo mkdir -p -m 755 /etc/apt/keyrings \
+            && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+            && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+            && sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && sudo apt update \
+            && sudo apt install gh -y
+
+      - name: Authenticate GH
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: gh auth status
+
+      - name: Setup Wine
+        run: |
+            export WINEPREFIX="$RUNNER_TEMP/.wine"
+            echo "WINEPREFIX=$WINEPREFIX" >> $GITHUB_ENV
+            echo "WINEDEBUG=-all" >> $GITHUB_ENV
+            
+            sudo apt update
+            sudo apt install -y gcc-multilib gcc-mingw-w64 libasound2-dev bluez libpulse-dev libdbus-1-dev libfontconfig-dev libfreetype-dev libgnutls28-dev libgl-dev libunwind-dev libx11-dev libxcomposite-dev libxcursor-dev libxfixes-dev libxi-dev libxrandr-dev libxrender-dev libxext-dev libwayland-bin libwayland-dev libegl-dev libxkbcommon-dev libxkbregistry-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libosmesa6-dev libsdl2-dev libudev-dev libvulkan-dev flex bison
+            
+            export WINE_VERSION="11.0"
+            wget -O $RUNNER_TEMP/wine_typelib.patch https://gitlab.winehq.org/wine/wine/-/merge_requests/9640.patch
+            
+            git clone -b wine-$WINE_VERSION https://gitlab.winehq.org/wine/wine.git $RUNNER_TEMP/wine-source
+            cd $RUNNER_TEMP/wine-source
+            git config user.email "ci@example.com"
+            git config user.name "CI"
+            git am $RUNNER_TEMP/wine_typelib.patch
+            mkdir build && cd build
+            ../configure --enable-archs=x86_64,i386 --without-tests
+            make -j$(nproc)
+            sudo make install
+            
+            mkdir -p $WINEPREFIX
+            WINEDLLOVERRIDES="mscoree,mshtml=" wineboot -u
+            wineserver -w
+
+      - name: Setup MSVC
+        run: |
+            sudo apt install -y msitools perl
+            
+            git clone -b ue-patches https://github.com/mircearoata/msvc-wine.git $RUNNER_TEMP/msvc-wine
+            
+            MSVC_DIR="$RUNNER_TEMP/msvc"
+            
+            $RUNNER_TEMP/msvc-wine/vsdownload.py \
+              --dest $MSVC_DIR \
+              --accept-license \
+              --channel release.ltsc.17.8 \
+              --msvc-version 17.8 \
+              --sdk-version 10.0.22621 \
+              Microsoft.Net.4.8.SDK \
+              Microsoft.VisualStudio.MinShell
+            
+            if [ -f $RUNNER_TEMP/msvc-download/X64.Debuggers.And.Tools-x64_en-us.msi ]; then
+              msiextract -C $MSVC_DIR $RUNNER_TEMP/msvc-download/X64.Debuggers.And.Tools-x64_en-us.msi > /dev/null
+            fi
+            
+            $RUNNER_TEMP/msvc-wine/install.sh $MSVC_DIR
+            
+            echo "UE_WINE_MSVC=`realpath $MSVC_DIR`" >> $GITHUB_ENV
+            echo "WINEPREFIX=$RUNNER_TEMP/.wine" >> $GITHUB_ENV
+            echo "WINEDEBUG=-all" >> $GITHUB_ENV
+
+      - name: Checkout SML
+        uses: actions/checkout@v6
+        with:
+          repository: satisfactorymodding/SatisfactoryModLoader
+          path: SML
+
+      - name: Inject CustomSwatches mod
+        run: |
+          rm -rf SML/Mods/CustomSwatches
+          cp -r "$GITHUB_WORKSPACE" SML/Mods/CustomSwatches
+
+      - name: Download CSS Engine
+        working-directory: /tmp
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          mkdir -p /tmp/ue
+          cd /tmp/ue
+          gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Linux.tar.zst.*"
+          ls -la
+
+      - name: Extract CSS Engine
+        working-directory: /tmp/ue
+        run: |
+          cat UnrealEngine-CSS-Editor-Linux.tar.zst.* | zstd -d | tar -xf -
+          rm UnrealEngine-CSS-Editor-Linux.tar.zst.*
+          ./Engine/Binaries/Linux/UnrealVersionSelector -register
+
+      - name: Download Wwise
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          WWISE_EMAIL: ${{ secrets.WWISE_EMAIL }}
+          WWISE_PASSWORD: ${{ secrets.WWISE_PASSWORD }}
+        run: |
+          gh release download --repo mircearoata/wwise-cli -p wwise-cli_linux_amd64 -O wwise-cli
+          chmod +x ./wwise-cli
+          ./wwise-cli download --sdk-version "2023.1.14.8770" \
+            --filter Packages=SDK \
+            --filter DeploymentPlatforms=Windows_vc160 \
+            --filter DeploymentPlatforms=Windows_vc170 \
+            --filter DeploymentPlatforms=Linux >/dev/null
+          ./wwise-cli integrate-ue --integration-version "2023.1.14.3555" \
+            --project "/tmp/work/SML/FactoryGame.uproject" >/dev/null
+
+      - name: Build Development Editor
+        run: |
+          /tmp/ue/Engine/Build/BatchFiles/Linux/Build.sh FactoryEditor Linux Development \
+            -project="/tmp/work/SML/FactoryGame.uproject" -Progress
+
+      - name: Package Mod
+        run: |
+          ulimit -n 1048576
+          /tmp/ue/Engine/Build/BatchFiles/RunUAT.sh \
+            -ScriptsForProject="/tmp/work/SML/FactoryGame.uproject" \
+            PackagePlugin \
+            -Project="/tmp/work/SML/FactoryGame.uproject" \
+            -dlcname=CustomSwatches \
+            -merge -build -server \
+            -clientconfig=Shipping -serverconfig=Shipping \
+            -platform=Win64 -serverplatform=Win64+Linux \
+            -nocompileeditor -installed
+
+      - name: Upload Mod Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: CustomSwatches-Mod
+          path: /tmp/work/SML/Saved/ArchivedPlugins/CustomSwatches/*.zip

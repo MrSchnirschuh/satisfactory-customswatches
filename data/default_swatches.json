@@ -1,0 +1,162 @@
+{
+  "description": "CustomSwatches - Default user swatches. Copy to <SatisfactoryDir>/FactoryGame/Saved/CustomSwatches/user_swatches.json",
+  "version": "1.0.0",
+  "swatches": [
+    {
+      "name": "Caterium Yellow",
+      "r": 1.0,
+      "g": 0.85,
+      "b": 0.0,
+      "sr": 0.5,
+      "sg": 0.4,
+      "sb": 0.0,
+      "emissive": 0.2,
+      "roughness": 0.3,
+      "category": "production"
+    },
+    {
+      "name": "Copper Orange",
+      "r": 1.0,
+      "g": 0.5,
+      "b": 0.1,
+      "sr": 0.6,
+      "sg": 0.3,
+      "sb": 0.0,
+      "emissive": 0.1,
+      "roughness": 0.4,
+      "category": "production"
+    },
+    {
+      "name": "Iron Blue",
+      "r": 0.2,
+      "g": 0.4,
+      "b": 0.9,
+      "sr": 0.0,
+      "sg": 0.2,
+      "sb": 0.5,
+      "emissive": 0.0,
+      "roughness": 0.6,
+      "category": "production"
+    },
+    {
+      "name": "Steel Grey",
+      "r": 0.5,
+      "g": 0.5,
+      "b": 0.55,
+      "sr": 0.3,
+      "sg": 0.3,
+      "sb": 0.35,
+      "emissive": 0.0,
+      "roughness": 0.7,
+      "category": "production"
+    },
+    {
+      "name": "Quartz White",
+      "r": 0.95,
+      "g": 0.95,
+      "b": 1.0,
+      "sr": 0.6,
+      "sg": 0.6,
+      "sb": 0.7,
+      "emissive": 0.05,
+      "roughness": 0.2,
+      "category": "production"
+    },
+    {
+      "name": "Sulfur Green",
+      "r": 0.4,
+      "g": 0.9,
+      "b": 0.1,
+      "sr": 0.1,
+      "sg": 0.5,
+      "sb": 0.0,
+      "emissive": 0.3,
+      "roughness": 0.3,
+      "category": "production"
+    },
+    {
+      "name": "Uranium Green Glow",
+      "r": 0.2,
+      "g": 1.0,
+      "b": 0.3,
+      "sr": 0.0,
+      "sg": 0.8,
+      "sb": 0.1,
+      "emissive": 0.8,
+      "roughness": 0.2,
+      "category": "powergen"
+    },
+    {
+      "name": "Nitrogen Purple",
+      "r": 0.5,
+      "g": 0.1,
+      "b": 0.8,
+      "sr": 0.3,
+      "sg": 0.0,
+      "sb": 0.5,
+      "emissive": 0.4,
+      "roughness": 0.3,
+      "category": "production"
+    },
+    {
+      "name": "Bauxite Silver",
+      "r": 0.8,
+      "g": 0.8,
+      "b": 0.85,
+      "sr": 0.5,
+      "sg": 0.5,
+      "sb": 0.55,
+      "emissive": 0.0,
+      "roughness": 0.3,
+      "category": "production"
+    },
+    {
+      "name": "Coal Black",
+      "r": 0.15,
+      "g": 0.15,
+      "b": 0.15,
+      "sr": 0.1,
+      "sg": 0.1,
+      "sb": 0.1,
+      "emissive": 0.0,
+      "roughness": 0.8,
+      "category": "powergen"
+    },
+    {
+      "name": "Oil Red",
+      "r": 0.8,
+      "g": 0.1,
+      "b": 0.05,
+      "sr": 0.4,
+      "sg": 0.0,
+      "sb": 0.0,
+      "emissive": 0.0,
+      "roughness": 0.7,
+      "category": "production"
+    },
+    {
+      "name": "Nuclear Purple Glow",
+      "r": 0.5,
+      "g": 0.0,
+      "b": 1.0,
+      "sr": 0.2,
+      "sg": 0.0,
+      "sb": 0.5,
+      "emissive": 0.9,
+      "roughness": 0.2,
+      "category": "powergen"
+    },
+    {
+      "name": "Unpainted Marker",
+      "r": 0.5,
+      "g": 0.5,
+      "b": 0.5,
+      "sr": 0.3,
+      "sg": 0.3,
+      "sb": 0.3,
+      "emissive": 0.0,
+      "roughness": 0.5,
+      "category": "unpainted_marker"
+    }
+  ]
+}

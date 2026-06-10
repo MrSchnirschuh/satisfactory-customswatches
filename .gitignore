@@ -1,0 +1,6 @@
+src/*.dll
+src/*.pdb
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
