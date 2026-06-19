@@ -36,6 +36,7 @@ jobs:
           cd C:\ue
           gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Win64.7z.*"
           7z x "UnrealEngine-CSS-Editor-Win64.7z.001" -o"C:\ue" -aoa
+          Remove-Item "UnrealEngine-CSS-Editor-Win64.7z.*"
         shell: powershell
       
       - name: Download Wwise
