@@ -34,8 +34,8 @@ jobs:
         run: |
           mkdir C:\ue
           cd C:\ue
-          gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Windows.zip*"
-          7z x "UnrealEngine-CSS-Editor-Windows.zip.001" -o"C:\ue" -aoa
+          gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Win64.7z.*"
+          7z x "UnrealEngine-CSS-Editor-Win64.7z.001" -o"C:\ue" -aoa
         shell: powershell
       
       - name: Download Wwise
