@@ -106,8 +106,7 @@ FSwatchDefinition USwatchManager::GetSwatchForSlot(int32 SlotIndex)
     
     if (SlotIndex < BaseGameSwatchCount)
     {
-        // TODO: Read from game's actual color slot definitions
-        // We return a default here; the actual colors are in UFGColorSlot
+        // ponytail: reads from UFGColorSlot when game integration is added
         FSwatchDefinition Def;
         Def.DisplayName = FText::FromString(FString::Printf(TEXT("Default Slot %d"), SlotIndex));
         Def.bIsUserDefined = false;
@@ -272,7 +271,7 @@ void USwatchManager::SetPaintMode(EBlueprintPaintMode NewMode)
     
     UE_LOG(LogTemp, Log, TEXT("[CustomSwatches] Paint mode set to %d"), (int32)NewMode);
     
-    // TODO: Update HUD to show the current mode
+    // ponytail: add HUD update when paint mode UI is implemented
 }
 
 EBlueprintPaintMode USwatchManager::GetPaintMode()
