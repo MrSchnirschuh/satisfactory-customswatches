@@ -2,6 +2,7 @@
 #include "SwatchManager.h"
 
 #include "Patching/NativeHookManager.h"
+#include "FGFactoryColoringTypes.h"
 #include "Buildables/FGBuildable.h"
 #include "Buildables/FGBuildableFactory.h"
 #include "Buildables/FGBuildableManufacturer.h"
@@ -205,16 +206,15 @@ namespace AutoSwatchSystem
         {
             // Only auto-assign if the building still has the default swatch (slot 0)
             // This prevents overwriting manual color choices
-            if (FGBuildable->GetColorSlot() != 0)
+            if (FGBuildable->GetCustomizationData_Native().ColorSlot != 0)
             {
                 return false; // already painted manually
             }
             
-            // Apply the swatch
-            FGBuildable->SetColorSlot(Slot);
-            
-            // Force visual update
-            FGBuildable->ApplyColorToMesh();
+            // Apply the swatch slot
+            FFactoryCustomizationData CustomizationData = FGBuildable->GetCustomizationData_Native();
+            CustomizationData.ColorSlot = Slot;
+            FGBuildable->SetCustomizationData_Native(CustomizationData);
             
             return true;
         }
@@ -234,7 +234,10 @@ namespace AutoSwatchSystem
         if (!Subsystem) return;
         
         TArray<AFGBuildable*> AllBuildables;
-        Subsystem->GetAllBuildables(AllBuildables);
+        for (AFGBuildable* Buildable : Subsystem->GetAllBuildablesRef())
+        {
+            AllBuildables.Add(Buildable);
+        }
         
         int32 AppliedCount = 0;
         for (AFGBuildable* Buildable : AllBuildables)

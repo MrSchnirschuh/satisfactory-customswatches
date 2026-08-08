@@ -2,6 +2,7 @@
 #include "SwatchManager.h"
 
 #include "Patching/NativeHookManager.h"
+#include "FGFactoryColoringTypes.h"
 #include "Buildables/FGBuildable.h"
 #include "FGBuildableSubsystem.h"
 #include "FGBlueprintSubsystem.h"
@@ -105,7 +106,7 @@ namespace PaintModes
             if (Buildable)
             {
                 // Check if this building has the marker swatch
-                uint8 CurrentSlot = Buildable->GetColorSlot();
+                uint8 CurrentSlot = Buildable->GetCustomizationData_Native().ColorSlot;
                 if (CurrentSlot == MarkerSlot)
                 {
                     Result.Add(Actor);
@@ -156,8 +157,9 @@ namespace PaintModes
         }
         
         // Apply the color slot
-        Buildable->SetColorSlot(SlotIndex);
-        Buildable->ApplyColorToMesh();
+        FFactoryCustomizationData CustomizationData = Buildable->GetCustomizationData_Native();
+        CustomizationData.ColorSlot = SlotIndex;
+        Buildable->SetCustomizationData_Native(CustomizationData);
         
         return true;
     }
