@@ -23,11 +23,6 @@ jobs:
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
       
-      - name: Setup gh CLI
-        run: |
-          winget install --id GitHub.cli -e --source winget
-        shell: powershell
-      
       - name: Download CSS Engine
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
