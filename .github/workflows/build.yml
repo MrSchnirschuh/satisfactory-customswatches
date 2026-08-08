@@ -19,6 +19,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: SML/Mods/CustomSwatches
+
+      # Move SML to a short path (C:\SML) — the default workspace path
+      # (D:\a\<org>\<repo>\SML\...) exceeds Windows MAX_PATH (260) during
+      # Package Mod's link actions. Mirrors official SML CI's /tmp/work trick.
+      - name: Move SML to short path
+        shell: powershell
+        run: |
+          Remove-Item C:\SML -Recurse -Force -ErrorAction SilentlyContinue
+          Move-Item "$env:GITHUB_WORKSPACE\SML" C:\SML
+          Get-ChildItem C:\SML | Select-Object -First 3
       
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
@@ -67,28 +77,28 @@ jobs:
         run: |
           gh release download --repo mircearoata/wwise-cli -p "wwise-cli_windows_amd64.exe" -O wwise-cli.exe
           .\wwise-cli.exe download --sdk-version "2023.1.14.8770" --filter Packages=SDK --filter DeploymentPlatforms=Windows_vc160 --filter DeploymentPlatforms=Windows_vc170 --filter DeploymentPlatforms=
-          .\wwise-cli.exe integrate-ue --integration-version "2023.1.14.3555" --project "$env:GITHUB_WORKSPACE\SML\FactoryGame.uproject"
+          .\wwise-cli.exe integrate-ue --integration-version "2023.1.14.3555" --project "C:\SML\FactoryGame.uproject"
         shell: powershell
       
       - name: Generate project files
         run: |
-          cd SML
-          C:\ue\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe -projectfiles -project="$env:GITHUB_WORKSPACE\SML\FactoryGame.uproject" -game -engine
+          cd C:\SML
+          C:\ue\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe -projectfiles -project="C:\SML\FactoryGame.uproject" -game -engine
         shell: powershell
       
       - name: Build FactoryEditor
         run: |
-          cd SML
-          C:\ue\Engine\Build\BatchFiles\Build.bat FactoryEditor Win64 Development -project="$env:GITHUB_WORKSPACE\SML\FactoryGame.uproject" -NoHotReload
+          cd C:\SML
+          C:\ue\Engine\Build\BatchFiles\Build.bat FactoryEditor Win64 Development -project="C:\SML\FactoryGame.uproject" -NoHotReload
         shell: powershell
       
       - name: Package Mod
         run: |
-          C:\ue\Engine\Build\BatchFiles\RunUAT.bat -ScriptsForProject="$env:GITHUB_WORKSPACE\SML\FactoryGame.uproject" PackagePlugin -Project="$env:GITHUB_WORKSPACE\SML\FactoryGame.uproject" -dlcname=CustomSwatches -build -server -clientconfig=Shipping -serverconfig=Shipping -platform=Win64 -serverplatform=Win64 -nocompileeditor -installed
+          C:\ue\Engine\Build\BatchFiles\RunUAT.bat -ScriptsForProject="C:\SML\FactoryGame.uproject" PackagePlugin -Project="C:\SML\FactoryGame.uproject" -dlcname=CustomSwatches -build -server -clientconfig=Shipping -serverconfig=Shipping -platform=Win64 -serverplatform=Win64 -nocompileeditor -installed
         shell: powershell
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: CustomSwatches
-          path: SML/Saved/ArchivedPlugins/CustomSwatches/*.zip
+          path: C:\SML\Saved\ArchivedPlugins\CustomSwatches\*.zip
