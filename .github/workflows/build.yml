@@ -28,7 +28,9 @@ jobs:
         shell: powershell
         run: |
           robocopy "$env:GITHUB_WORKSPACE\SML" "C:\SML" /E /MOVE /NFL /NDL /NJH /NJS /NP
-          Get-ChildItem C:\SML | Select-Object -First 3
+          # robocopy returns 1 for "files copied successfully" (>=8 is a real error)
+          if ($LASTEXITCODE -ge 8) { exit 1 }
+          exit 0
       
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
