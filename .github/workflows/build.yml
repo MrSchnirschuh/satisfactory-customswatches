@@ -67,7 +67,7 @@ jobs:
           WWISE_PASSWORD: ${{ secrets.WWISE_PASSWORD }}
         run: |
           gh release download --repo mircearoata/wwise-cli -p "wwise-cli_windows_amd64.exe" -O wwise-cli.exe
-          .\wwise-cli.exe download --sdk-version "2023.1.14.8770" --filter Packages=SDK --filter DeploymentPlatforms=Windows_vc160 --filter DeploymentPlatforms=Windows_vc170
+          .\wwise-cli.exe download --sdk-version "2023.1.14.8770" --filter Packages=SDK --filter DeploymentPlatforms=Windows_vc160 --filter DeploymentPlatforms=Windows_vc170 --filter DeploymentPlatforms=
           .\wwise-cli.exe integrate-ue --integration-version "2023.1.14.3555" --project "$env:GITHUB_WORKSPACE\SML\FactoryGame.uproject"
         shell: powershell
       
