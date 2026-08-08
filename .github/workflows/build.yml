@@ -25,13 +25,12 @@ jobs:
 
       # UE CSS-Editor engine extracts ~14GB; standard windows-latest only has ~14GB
       # free, so drop bulky preinstalled tooling first. (No third-party action — native PS.)
+      # NB: keep C:\ProgramData\chocolatey (provides 7z) AND dotnet (UnrealBuildTool needs
+      # the .NET 8 runtime to run).
       - name: Free build disk space
         shell: powershell
         run: |
-          # NB: keep C:\ProgramData\chocolatey — it provides 7z, which the extract step needs
           $targets = @(
-            'C:\Program Files\dotnet',
-            'C:\Program Files (x86)\dotnet',
             'C:\Program Files\Android',
             'C:\Program Files (x86)\Android',
             'C:\Program Files\Haskell',
