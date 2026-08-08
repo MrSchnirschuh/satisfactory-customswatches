@@ -32,6 +32,8 @@ jobs:
           gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Win64.7z.*"
           7z x "UnrealEngine-CSS-Editor-Win64.7z.001" -o"C:\ue" -aoa
           Remove-Item "UnrealEngine-CSS-Editor-Win64.7z.*"
+          # Register the engine so wwise-cli's integrate-ue can resolve the engine root (mirrors official SML CI's UnrealVersionSelector -register on Linux)
+          C:\ue\Engine\Binaries\Win64\UnrealVersionSelector.exe -register
         shell: powershell
       
       - name: Download Wwise
