@@ -32,4 +32,4 @@ public:
     virtual void ShutdownModule() override {}
 };
 
-IMPLEMENT_GAME_MODULE(FCustomSwatchesModule, CustomSwatches);
+IMPLEMENT_MODULE(FCustomSwatchesModule, CustomSwatches);
