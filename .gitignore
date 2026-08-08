@@ -4,3 +4,6 @@ Binaries/
 Intermediate/
 Saved/
 DerivedDataCache/
+
+# graphify persistent knowledge graph output
+/graphify-out/
