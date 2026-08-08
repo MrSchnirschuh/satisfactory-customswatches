@@ -12,7 +12,6 @@
 #include "Buildables/FGBuildableStorage.h"
 #include "Buildables/FGBuildableFoundation.h"
 #include "Buildables/FGBuildableRailroadTrack.h"
-#include "Buildables/FGBuildableVehicle.h"
 #include "Buildables/FGBuildableResourceExtractor.h"
 #include "FGGameUserSettings.h"
 #include "FGBuildableSubsystem.h"

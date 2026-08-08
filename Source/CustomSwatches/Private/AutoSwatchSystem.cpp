@@ -12,10 +12,11 @@
 #include "Buildables/FGBuildablePipeline.h"
 #include "Buildables/FGBuildableConveyorBase.h"
 #include "Buildables/FGBuildableStorage.h"
-#include "Buildables/FGBuildableSplitter.h"
+#include "Buildables/FGBuildableSplitterSmart.h"
+#include "Buildables/FGBuildableAttachmentSplitter.h"
 #include "Buildables/FGBuildableTrainPlatform.h"
 #include "Buildables/FGBuildableRailroadTrack.h"
-#include "Buildables/FGBuildableVehicle.h"
+#include "WheeledVehicles/FGWheeledVehicle.h"
 #include "Buildables/FGBuildableFoundation.h"
 #include "Buildables/FGBuildableWall.h"
 #include "Buildables/FGBuildablePillar.h"
@@ -30,7 +31,7 @@
 #include "Buildables/FGBuildableLightsControlPanel.h"
 #include "Buildables/FGBuildableDroneStation.h"
 #include "Buildables/FGBuildablePipeHyper.h"
-#include "Buildables/FGBuildableJumpPad.h"
+#include "Buildables/FGBuildableJumppad.h"
 #include "Buildables/FGBuildablePowerStorage.h"
 #include "Buildables/FGBuildablePriorityPowerSwitch.h"
 #include "Buildables/FGBuildableSnowCannon.h"
@@ -115,7 +116,8 @@ namespace AutoSwatchSystem
             return EBuildingCategory::Logistics;
         }
         
-        if (Class->IsChildOf(AFGBuildableSplitter::StaticClass()))
+        if (Class->IsChildOf(AFGBuildableSplitterSmart::StaticClass()) ||
+            Class->IsChildOf(AFGBuildableAttachmentSplitter::StaticClass()))
         {
             return EBuildingCategory::Logistics;
         }
@@ -134,7 +136,7 @@ namespace AutoSwatchSystem
         // --- TRANSPORT ---
         if (Class->IsChildOf(AFGBuildableTrainPlatform::StaticClass()) ||
             Class->IsChildOf(AFGBuildableRailroadTrack::StaticClass()) ||
-            Class->IsChildOf(AFGBuildableVehicle::StaticClass()) ||
+            Class->IsChildOf(AFGWheeledVehicle::StaticClass()) ||
             Class->IsChildOf(AFGBuildableDroneStation::StaticClass()))
         {
             return EBuildingCategory::Transport;
@@ -142,7 +144,7 @@ namespace AutoSwatchSystem
         
         // Hypertubes, jump pads
         if (Class->IsChildOf(AFGBuildablePipeHyper::StaticClass()) ||
-            Class->IsChildOf(AFGBuildableJumpPad::StaticClass()))
+            Class->IsChildOf(AFGBuildableJumppad::StaticClass()))
         {
             return EBuildingCategory::Transport;
         }
