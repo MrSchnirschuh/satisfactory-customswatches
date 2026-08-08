@@ -53,8 +53,11 @@ jobs:
           gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Win64.7z.*"
           7z x "UnrealEngine-CSS-Editor-Win64.7z.001" -o"C:\ue" -aoa
           Remove-Item "UnrealEngine-CSS-Editor-Win64.7z.*"
-          # Register the engine so wwise-cli's integrate-ue can resolve the engine root (mirrors official SML CI's UnrealVersionSelector -register on Linux)
-          C:\ue\Engine\Binaries\Win64\UnrealVersionSelector.exe -register
+          # Register engine root under the uproject's exact EngineAssociation
+          # (5.6.1-CSS). UnrealVersionSelector -register keys by the engine's real
+          # version, not the custom association, so wwise-cli's integrate-ue can't
+          # find it. Write the HKCU value directly (what listengines_windows.go reads).
+          reg.exe add "HKCU\SOFTWARE\Epic Games\Unreal Engine\Builds" /v "5.6.1-CSS" /d "C:\ue" /f
         shell: powershell
       
       - name: Download Wwise
