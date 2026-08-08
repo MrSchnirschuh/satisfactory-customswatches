@@ -23,11 +23,11 @@ jobs:
       # Move SML to a short path (C:\SML) — the default workspace path
       # (D:\a\<org>\<repo>\SML\...) exceeds Windows MAX_PATH (260) during
       # Package Mod's link actions. Mirrors official SML CI's /tmp/work trick.
+      # robocopy (not Move-Item) — .git files are read-only, which breaks Move.
       - name: Move SML to short path
         shell: powershell
         run: |
-          Remove-Item C:\SML -Recurse -Force -ErrorAction SilentlyContinue
-          Move-Item "$env:GITHUB_WORKSPACE\SML" C:\SML
+          robocopy "$env:GITHUB_WORKSPACE\SML" "C:\SML" /E /MOVE /NFL /NDL /NJH /NJS /NP
           Get-ChildItem C:\SML | Select-Object -First 3
       
       - name: Setup MSVC
