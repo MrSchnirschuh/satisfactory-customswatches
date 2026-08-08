@@ -19,7 +19,7 @@
 #include "WheeledVehicles/FGWheeledVehicle.h"
 #include "Buildables/FGBuildableFoundation.h"
 #include "Buildables/FGBuildableWall.h"
-#include "Buildables/FGBuildablePillar.h"
+#include "FGBuildablePillar.h"
 #include "Buildables/FGBuildableStair.h"
 #include "Buildables/FGBuildableWalkway.h"
 #include "Buildables/FGBuildableDecor.h"
