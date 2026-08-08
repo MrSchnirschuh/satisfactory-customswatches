@@ -15,7 +15,6 @@
 #include "Buildables/FGBuildableVehicle.h"
 #include "Buildables/FGBuildableResourceExtractor.h"
 #include "FGGameUserSettings.h"
-#include "FGColoredInstanceMesh.h"
 #include "FGBuildableSubsystem.h"
 #include "FGPlayerController.h"
 #include "FGHUD.h"

@@ -4,7 +4,6 @@
 #include "Containers/Array.h"
 #include "Containers/Map.h"
 #include "UObject/NoExportTypes.h"
-#include "FGColoredInstanceMesh.h"
 #include "Buildables/FGBuildable.h"
 #include "SwatchManager.generated.h"
 
