@@ -20,14 +20,15 @@ jobs:
         with:
           path: SML/Mods/CustomSwatches
 
-      # Move SML to a short path (C:\SML) — the default workspace path
-      # (D:\a\<org>\<repo>\SML\...) exceeds Windows MAX_PATH (260) during
-      # Package Mod's link actions. Mirrors official SML CI's /tmp/work trick.
+      # Move SML to a short path (D:\SML — workspace drive, split disk from C:\ue) —
+      # the default workspace path (D:\a\<org>\<repo>\SML\...) exceeds Windows MAX_PATH
+      # (260) during Package Mod's link actions. Keeping it on D: balances disk across
+      # two drives (engine stays on C:), mirroring official SML CI's /tmp/work trick.
       # robocopy (not Move-Item) — .git files are read-only, which breaks Move.
       - name: Move SML to short path
         shell: powershell
         run: |
-          robocopy "$env:GITHUB_WORKSPACE\SML" "C:\SML" /E /MOVE /NFL /NDL /NJH /NJS /NP
+          robocopy "$env:GITHUB_WORKSPACE\SML" "D:\SML" /E /MOVE /NFL /NDL /NJH /NJS /NP
           # robocopy returns 1 for "files copied successfully" (>=8 is a real error)
           if ($LASTEXITCODE -ge 8) { exit 1 }
           exit 0
@@ -79,28 +80,28 @@ jobs:
         run: |
           gh release download --repo mircearoata/wwise-cli -p "wwise-cli_windows_amd64.exe" -O wwise-cli.exe
           .\wwise-cli.exe download --sdk-version "2023.1.14.8770" --filter Packages=SDK --filter DeploymentPlatforms=Windows_vc160 --filter DeploymentPlatforms=Windows_vc170 --filter DeploymentPlatforms=
-          .\wwise-cli.exe integrate-ue --integration-version "2023.1.14.3555" --project "C:\SML\FactoryGame.uproject"
+          .\wwise-cli.exe integrate-ue --integration-version "2023.1.14.3555" --project "D:\SML\FactoryGame.uproject"
         shell: powershell
       
       - name: Generate project files
         run: |
-          cd C:\SML
-          C:\ue\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe -projectfiles -project="C:\SML\FactoryGame.uproject" -game -engine
+          cd D:\SML
+          C:\ue\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe -projectfiles -project="D:\SML\FactoryGame.uproject" -game -engine
         shell: powershell
       
       - name: Build FactoryEditor
         run: |
-          cd C:\SML
-          C:\ue\Engine\Build\BatchFiles\Build.bat FactoryEditor Win64 Development -project="C:\SML\FactoryGame.uproject" -NoHotReload
+          cd D:\SML
+          C:\ue\Engine\Build\BatchFiles\Build.bat FactoryEditor Win64 Development -project="D:\SML\FactoryGame.uproject" -NoHotReload
         shell: powershell
       
       - name: Package Mod
         run: |
-          C:\ue\Engine\Build\BatchFiles\RunUAT.bat -ScriptsForProject="C:\SML\FactoryGame.uproject" PackagePlugin -Project="C:\SML\FactoryGame.uproject" -dlcname=CustomSwatches -build -server -clientconfig=Shipping -serverconfig=Shipping -platform=Win64 -serverplatform=Win64 -nocompileeditor -installed
+          C:\ue\Engine\Build\BatchFiles\RunUAT.bat -ScriptsForProject="D:\SML\FactoryGame.uproject" PackagePlugin -Project="D:\SML\FactoryGame.uproject" -dlcname=CustomSwatches -build -server -clientconfig=Shipping -serverconfig=Shipping -platform=Win64 -serverplatform=Win64 -nocompileeditor -installed
         shell: powershell
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: CustomSwatches
-          path: C:\SML\Saved\ArchivedPlugins\CustomSwatches\*.zip
+          path: D:\SML\Saved\ArchivedPlugins\CustomSwatches\*.zip
