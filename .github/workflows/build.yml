@@ -22,6 +22,27 @@ jobs:
       
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
+
+      # UE CSS-Editor engine extracts ~14GB; standard windows-latest only has ~14GB
+      # free, so drop bulky preinstalled tooling first. (No third-party action — native PS.)
+      - name: Free build disk space
+        shell: powershell
+        run: |
+          $targets = @(
+            'C:\Program Files\dotnet',
+            'C:\Program Files (x86)\dotnet',
+            'C:\Program Files\Android',
+            'C:\Program Files (x86)\Android',
+            'C:\Program Files\Haskell',
+            'C:\Program Files\CodeQL',
+            'C:\hostedtoolcache\windows',
+            'C:\ProgramData\chocolatey',
+            'C:\Users\runneradmin\.nuget'
+          )
+          foreach ($t in $targets) {
+            if (Test-Path $t) { Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue }
+          }
+          Get-PSDrive C | Select-Object Used,Free | Format-List
       
       - name: Download CSS Engine
         env:
