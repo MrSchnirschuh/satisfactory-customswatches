@@ -28,6 +28,7 @@ jobs:
       - name: Free build disk space
         shell: powershell
         run: |
+          # NB: keep C:\ProgramData\chocolatey — it provides 7z, which the extract step needs
           $targets = @(
             'C:\Program Files\dotnet',
             'C:\Program Files (x86)\dotnet',
@@ -36,7 +37,6 @@ jobs:
             'C:\Program Files\Haskell',
             'C:\Program Files\CodeQL',
             'C:\hostedtoolcache\windows',
-            'C:\ProgramData\chocolatey',
             'C:\Users\runneradmin\.nuget'
           )
           foreach ($t in $targets) {
