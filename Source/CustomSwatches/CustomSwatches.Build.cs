@@ -29,7 +29,7 @@ public class CustomSwatches : ModuleRules
         // Optimizations
         if (Target.Configuration == UnrealBuildTool.UnrealTargetConfiguration.Shipping)
         {
-            OptimizeCode = CodeOptimization.Aggressive;
+            OptimizeCode = CodeOptimization.Always;
         }
         
         // Link against SML
