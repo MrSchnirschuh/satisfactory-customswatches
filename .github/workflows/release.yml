@@ -1,45 +1,37 @@
-name: Build CustomSwatches Mod
+name: Release CustomSwatches Mod
 
 on:
   push:
-  workflow_dispatch:
+    tags:
+      - "v*"
 
 jobs:
-  build:
+  release:
     runs-on: windows-latest
-    
+    permissions:
+      contents: write
     steps:
       - name: Checkout SML
         uses: actions/checkout@v4
         with:
           repository: satisfactorymodding/SatisfactoryModLoader
           path: SML
-      
+
       - name: Checkout Mod
         uses: actions/checkout@v4
         with:
           path: SML/Mods/CustomSwatches
 
-      # Move SML to a short path (D:\SML — workspace drive, split disk from C:\ue) —
-      # the default workspace path (D:\a\<org>\<repo>\SML\...) exceeds Windows MAX_PATH
-      # (260) during Package Mod's link actions. Keeping it on D: balances disk across
-      # two drives (engine stays on C:), mirroring official SML CI's /tmp/work trick.
-      # robocopy (not Move-Item) — .git files are read-only, which breaks Move.
       - name: Move SML to short path
         shell: powershell
         run: |
           robocopy "$env:GITHUB_WORKSPACE\SML" "D:\SML" /E /MOVE /NFL /NDL /NJH /NJS /NP
-          # robocopy returns 1 for "files copied successfully" (>=8 is a real error)
           if ($LASTEXITCODE -ge 8) { exit 1 }
           exit 0
-      
+
       - name: Setup MSVC
         uses: microsoft/setup-msbuild@v2
 
-      # UE CSS-Editor engine extracts ~14GB; standard windows-latest only has ~14GB
-      # free, so drop bulky preinstalled tooling first. (No third-party action — native PS.)
-      # NB: keep C:\ProgramData\chocolatey (provides 7z) AND dotnet (UnrealBuildTool needs
-      # the .NET 8 runtime to run).
       - name: Free build disk space
         shell: powershell
         run: |
@@ -55,7 +47,7 @@ jobs:
             if (Test-Path $t) { Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue }
           }
           Get-PSDrive C | Select-Object Used,Free | Format-List
-      
+
       - name: Download CSS Engine
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -65,13 +57,9 @@ jobs:
           gh release download --repo satisfactorymodding/UnrealEngine -p "UnrealEngine-CSS-Editor-Win64.7z.*"
           7z x "UnrealEngine-CSS-Editor-Win64.7z.001" -o"C:\ue" -aoa
           Remove-Item "UnrealEngine-CSS-Editor-Win64.7z.*"
-          # Register engine root under the uproject's exact EngineAssociation
-          # (5.6.1-CSS). UnrealVersionSelector -register keys by the engine's real
-          # version, not the custom association, so wwise-cli's integrate-ue can't
-          # find it. Write the HKCU value directly (what listengines_windows.go reads).
           reg.exe add "HKCU\SOFTWARE\Epic Games\Unreal Engine\Builds" /v "5.6.1-CSS" /d "C:\ue" /f
         shell: powershell
-      
+
       - name: Download Wwise
         env:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
@@ -82,26 +70,41 @@ jobs:
           .\wwise-cli.exe download --sdk-version "2023.1.14.8770" --filter Packages=SDK --filter DeploymentPlatforms=Windows_vc160 --filter DeploymentPlatforms=Windows_vc170 --filter DeploymentPlatforms=
           .\wwise-cli.exe integrate-ue --integration-version "2023.1.14.3555" --project "D:\SML\FactoryGame.uproject"
         shell: powershell
-      
+
       - name: Generate project files
         run: |
           cd D:\SML
           C:\ue\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe -projectfiles -project="D:\SML\FactoryGame.uproject" -game -engine
         shell: powershell
-      
+
       - name: Build FactoryEditor
         run: |
           cd D:\SML
           C:\ue\Engine\Build\BatchFiles\Build.bat FactoryEditor Win64 Development -project="D:\SML\FactoryGame.uproject" -NoHotReload
         shell: powershell
-      
+
       - name: Package Mod
         run: |
           C:\ue\Engine\Build\BatchFiles\RunUAT.bat -ScriptsForProject="D:\SML\FactoryGame.uproject" PackagePlugin -Project="D:\SML\FactoryGame.uproject" -dlcname=CustomSwatches -build -server -clientconfig=Shipping -serverconfig=Shipping -platform=Win64 -serverplatform=Win64 -nocompileeditor -installed
         shell: powershell
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+
+      - name: Create release archive
+        shell: powershell
+        run: |
+          $pkg = "D:\SML\Saved\ArchivedPlugins\CustomSwatches"
+          $out = "$env:GITHUB_WORKSPACE\CustomSwatches-${{ github.ref_name }}.zip"
+          Compress-Archive -Path "$pkg\*" -DestinationPath $out -Force
+          Get-FileHash $out -Algorithm SHA256 | Select-Object Hash | Format-List | Out-File "$env:GITHUB_WORKSPACE\checksums.txt"
+          Add-Content -Path "$env:GITHUB_WORKSPACE\checksums.txt" -Value (Get-FileHash $out -Algorithm SHA1 | Select-Object Hash | Format-List | Out-String)
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@e7a91f6e52a6b8f3f67d1f5900a5c8a9e3d1f0a9 # v2.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: CustomSwatches-${{ github.run_number }}
-          path: D:\SML\Saved\ArchivedPlugins\CustomSwatches\*.zip
+          draft: true
+          prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          generate_release_notes: true
+          files: |
+            CustomSwatches-*.zip
+            checksums.txt

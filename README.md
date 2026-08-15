@@ -1,15 +1,19 @@
 # CustomSwatches - Satisfactory Mod
 
-## What it does
+**Version:** 1.0.0  
+**Satisfactory:** 1.2+ (build ≥ CL502094 / `>=491125` in the engine sense used by SML)  
+**SML:** ≥ 3.10 (Satisfactory 1.2 customization API)
 
-Extends the vanilla paint/swatch system with:
+> Adds custom paint swatches, automatic category-based coloring, and extra blueprint paint modes to Satisfactory.
+
+## What it does
 
 ### 1. Custom Swatches
 Add your own color swatches via a simple JSON file. No C++ changes needed.
 Define primary color, secondary color, emissive/glow, and roughness.
 
 ### 2. Automatic Swatch Assignment
-Buildings automatically get the right swatch based on their **category**:
+New buildings still on the default swatch (slot 0) automatically get the right color based on their **category**:
 
 | Category | Includes |
 |----------|----------|
@@ -24,76 +28,73 @@ Buildings automatically get the right swatch based on their **category**:
 | Architecture | Walls, pillars, stairs, walkways, signs, lights, decor |
 | Defense | Snow cannons (and modded defense buildings) |
 
-Auto-assignment only applies to buildings still on the default swatch (slot 0).
 Manually painted buildings keep their color.
 
 ### 3. Blueprint Paint Modes
 Additional modes for the build gun's paint tool:
 
-- **Blueprint All**: Paints every building in the same blueprint group. 
+- **Blueprint All** — paints every building in the same blueprint group.
   Use case: instantly recolor an entire factory module.
 
-- **Blueprint Mode (unpainted-target)**: Only paints buildings with the
+- **Blueprint Mode (unpainted-target)** — only paints buildings with the
   "Unpainted Marker" swatch. Buildings with category-specific swatches
-  (power poles, belts, foundations) are SKIPPED.
+  (power poles, belts, foundations) are skipped.
   Use case: color-code production lines in a shared blueprint without
   repainting infrastructure.
 
-  Example - Smelter Blueprint:
-  - 3 smelters each have the "Unpainted Marker" swatch
-  - 1 power pole has Power swatch
-  - 1 conveyor belt has Logistics swatch
-  With Blueprint Mode + "Caterium Yellow": only smelters turn yellow.
-  Power pole and belt keep their category colors.
+  Example — smelter blueprint with 3 smelters on "Unpainted Marker", 1 power pole on Power swatch and 1 belt on Logistics swatch: painting with "Caterium Yellow" turns only the smelters yellow; infrastructure keeps its category colors.
 
-- **Category Select**: Only paints buildings of one category in the blueprint.
+- **Category Select** — only paints buildings of one category in the blueprint.
   Use case: recolor all power generators without touching production.
 
 ### 4. Configurable
 - Add/remove custom swatches by editing `user_swatches.json`
-- Map categories to specific swatch slots via config
+- Map categories to specific swatch slots via `DefaultModConfig.ini` (or the SML config UI)
 - Set the "unpainted marker" slot
 
 ## Installation
 
-### Prerequisites
-- Satisfactory 1.2+
-- Satisfactory Mod Loader (SML) installed
+### Via Satisfactory Mod Manager (SMM) — recommended
 
-### Build from source
+1. Open the [Satisfactory Mod Manager](https://docs.ficsit.app/satisfactory-modding/latest/ForUsers/SatisfactoryModManager.html).
+2. Search for **"CustomSwatches"** and click **Install**.
+3. Launch the game — the mod loads automatically.
 
-1. Set up the SML development environment:
-   - Install UE5 and the Satisfactory SDK
-   - Clone the SML repository
+### Manual install
 
-2. Clone this mod:
+1. Download the latest `CustomSwatches.zip` from the [Releases](../../releases) page.
+2. Extract it to your Satisfactory mods folder:
    ```
-   git clone <this-repo>
+   %LOCALAPPDATA%\FactoryGame\Mods\
    ```
+   The folder should contain `CustomSwatches.uplugin`, `DefaultModConfig.ini`, and the `Source/` tree.
+3. Start Satisfactory.
 
-3. Copy to the SML mods source folder:
-   ```
-   cp -r CustomSwatches <SML>/Source/Mods/
-   ```
+### From source (for SML developers)
 
-4. Build with SML's build script:
+1. Set up the SML development environment (UE5 + Satisfactory SDK).
+2. Clone this repo and place it under your SML tree:
+   ```powershell
+   git clone https://github.com/MrSchnirschuh/satisfactory-customswatches.git
+   Copy-Item -Recurse satisfactory-customswatches\CustomSwatches SML\Mods\
    ```
-   python build.py
+3. Generate project files and build:
+   ```powershell
+   cd SML
+   .\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe -projectfiles -project="SML\FactoryGame.uproject" -game -engine
+   .\Engine\Build\BatchFiles\Build.bat FactoryEditor Win64 Development -project="SML\FactoryGame.uproject" -NoHotReload
+   .\Engine\Build\BatchFiles\RunUAT.bat -ScriptsForProject="SML\FactoryGame.uproject" PackagePlugin -Project="SML\FactoryGame.uproject" -dlcname=CustomSwatches -build -server -clientconfig=Shipping -serverconfig=Shipping -platform=Win64 -serverplatform=Win64 -nocompileeditor -installed
    ```
-
-5. The compiled `.dll` goes into:
-   ```
-   <Satisfactory>/FactoryGame/Mods/CustomSwatches/
-   ```
+4. Packaged output lands in `SML\Saved\ArchivedPlugins\CustomSwatches\`.
 
 ### Configure swatches
 
-Copy `data/user_swatches.json` to:
+Copy `data/default_swatches.json` to:
 ```
-<Satisfactory>/FactoryGame/Saved/CustomSwatches/user_swatches.json
+%LOCALAPPDATA%\FactoryGame\Saved\CustomSwatches\user_swatches.json
 ```
 
-Edit the JSON to add your colors. The format is:
+Edit the JSON to add your own colors:
 ```json
 {
   "swatches": [
@@ -109,37 +110,59 @@ Edit the JSON to add your colors. The format is:
 }
 ```
 
-### Default swatches included
-The mod comes with 13 pre-defined swatches:
-- Caterium Yellow, Copper Orange, Iron Blue, Steel Grey
-- Quartz White, Sulfur Green, Uranium Green Glow
-- Nitrogen Purple, Bauxite Silver, Coal Black
-- Oil Red, Nuclear Purple Glow
-- **Unpainted Marker** (slot 12 - used by Blueprint Mode)
+Restart the game to reload swatches. Game default slots stay in place; custom slots follow the order in your file.
+
+### Included default swatches
+
+| # | Name | Category | Notes |
+|---|------|----------|-------|
+| 0 | Caterium Yellow | production | |
+| 1 | Copper Orange | production | |
+| 2 | Iron Blue | production | |
+| 3 | Steel Grey | production | |
+| 4 | Quartz White | production | |
+| 5 | Sulfur Green | production | |
+| 6 | Uranium Green Glow | powergen | high emissive |
+| 7 | Nitrogen Purple | production | |
+| 8 | Bauxite Silver | production | |
+| 9 | Coal Black | powergen | |
+| 10 | Oil Red | production | |
+| 11 | Nuclear Purple Glow | powergen | high emissive |
+| 12 | **Unpainted Marker** | unpainted_marker | used by Blueprint Mode |
 
 ## Usage In-Game
 
 1. Equip the Build Gun and select Paint mode
 2. Use the standard color slot selector - custom slots appear after the defaults
 3. Press a keybind (configurable) to cycle paint modes:
-   - Default mode
-   - Blueprint All mode
-   - Blueprint Mode (unpainted-target)
-   - Category Select mode
-4. Paint a building - the behavior changes based on active mode
+   - **Default** — single building, vanilla behavior
+   - **Blueprint All** — every building in the same blueprint group
+   - **Blueprint Mode (unpainted-target)** — only buildings with the Unpainted Marker swatch
+   - **Category Select** — only buildings of the selected category
+4. Paint a building — behavior changes based on the active mode.
 
-### Recommended workflow
+### Default paint mode quick reference
 
-1. Set up category auto-assignment:
-   - Map `Power` category -> slot 0 or a custom slot
-   - Map `Logistics` -> slot 9 (pipes slot)
-   
-2. For blueprints with multiple production lines:
-   - Before saving the blueprint, paint machines with "Unpainted Marker"
-   - Connect power poles (they auto-get Power swatch)
-   - Connect belts (they auto-get Logistics swatch)
-   - Save blueprint
-   - Place blueprint, then paint with Blueprint Mode + color per production line
+The mode can be changed in `DefaultModConfig.ini` (`DefaultPaintMode=0..3`) or via the in-game SML config UI:
+
+| Value | Mode |
+|-------|------|
+| 0 | Default (single building) |
+| 1 | Blueprint All |
+| 2 | Blueprint Mode (unpainted-target) |
+| 3 | Category Select |
+
+## Configuration
+
+Place `DefaultModConfig.ini` in:
+```
+%LOCALAPPDATA%\FactoryGame\Saved\Config\WindowsNoEditor\
+```
+
+Key settings:
+- `UnpaintedMarkerSlot` — swatch slot index considered "unpainted" by Blueprint Mode (`12` by default, `-1` to disable)
+- `CategoryMapping_*` — map each building category to a swatch slot (`-1` disables auto-assignment)
+- `DefaultPaintMode` — paint mode on game start
 
 ## Development Notes
 
@@ -160,9 +183,15 @@ Source/CustomSwatches/
 
 ### API Notes
 - The mod uses SML's `SUBSCRIBE_METHOD` hooks for non-invasive patching
-- Category detection uses the UE class hierarchy (IsChildOf)
+- Category detection uses the UE class hierarchy (`IsChildOf`)
 - Blueprint grouping uses `AFGBlueprintSubsystem` (Satisfactory 1.0+)
 - Color application uses `AFGBuildable::SetColorSlot()` + `ApplyColorToMesh()`
+
+### Version & release
+
+- Version is defined in `CustomSwatches.uplugin` (`VersionName`/`SemVersion`) — single source of truth.
+- The release workflow (`.github/workflows/release.yml`) builds the packaged mod archive and attaches it to a GitHub Release on every pushed `v*` tag.
+- The current `build.yml` builds every push and uploads a CI artifact; use a `v*` tag to trigger a full release archive.
 
 ### TODO / Planned Features
 - [ ] In-game UI for managing custom swatches (instead of JSON editing)
