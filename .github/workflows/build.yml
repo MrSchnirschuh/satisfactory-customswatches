@@ -10,13 +10,13 @@ jobs:
     
     steps:
       - name: Checkout SML
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: satisfactorymodding/SatisfactoryModLoader
           path: SML
       
       - name: Checkout Mod
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: SML/Mods/CustomSwatches
 
@@ -34,7 +34,7 @@ jobs:
           exit 0
       
       - name: Setup MSVC
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
 
       # UE CSS-Editor engine extracts ~14GB; standard windows-latest only has ~14GB
       # free, so drop bulky preinstalled tooling first. (No third-party action — native PS.)
@@ -101,7 +101,7 @@ jobs:
         shell: powershell
       
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: CustomSwatches-${{ github.run_number }}
           path: D:\SML\Saved\ArchivedPlugins\CustomSwatches\*.zip
